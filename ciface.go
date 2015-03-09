@@ -3,7 +3,6 @@ package ciface
 import (
 	"bytes"
 	"encoding/csv"
-	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -12,46 +11,29 @@ import (
 // CsvInterface is a structure describing the structure of the parser.
 // Structure is in line with that of the standard libraries Csv parser.
 type CsvInterface struct {
+	Reader    *csv.Reader
 	Data      []byte
 	Header    []string
-	Delimiter rune
-	Comment   rune
 	Precision int64
 }
 
 // NewParser is used to initialize a new CsvInterface with data
 // Other settings should be applied directly to the new object
 func NewParser(data []byte) *CsvInterface {
+	reader := csv.NewReader(bytes.NewBuffer(data))
+	reader.FieldsPerRecord = -1
+	reader.TrimLeadingSpace = true
+
 	return &CsvInterface{
-		Data:      data,
+		Reader:    reader,
 		Precision: 4,
 	}
 }
 
 // Parse takes the CsvInterface struct and parses the []byte data to an []interface{}
-func (cif *CsvInterface) Parse() []interface{} {
-	//cif.Delimiter = ','
-	bbuf := bytes.NewBuffer(cif.Data)
-
-	// Configure the CSV reader
-	reader := csv.NewReader(bbuf)
-	reader.FieldsPerRecord = -1
-	reader.TrimLeadingSpace = true
-
-	if cif.Delimiter != 0 {
-		reader.Comma = cif.Delimiter
-	}
-
-	if cif.Comment != 0 {
-		reader.Comment = cif.Comment
-	}
-
+func (cif *CsvInterface) Parse() ([]interface{}, error) {
 	// Run the Csv reader with the provided settings
-	raw, err := reader.ReadAll()
-
-	if err != nil {
-		log.Fatal("Error while attempting to parse csv data", err)
-	}
+	raw, err := cif.Reader.ReadAll()
 
 	// Start processing the raw line data. If no header is configured
 	// the first line will be automatically parsed as the header.
@@ -65,7 +47,7 @@ func (cif *CsvInterface) Parse() []interface{} {
 		}
 	}
 
-	return output
+	return output, err
 }
 
 // LineConverter processes the csv line data to the proper json types and returns
