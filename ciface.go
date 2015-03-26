@@ -61,6 +61,8 @@ func (cif *CsvInterface) LineConverter(line []string) interface{} {
 			doc[cif.Header[count]] = bs
 		} else if number, err := strconv.ParseFloat(value, 64); err == nil {
 			doc[cif.Header[count]] = Round(number, cif.Precision)
+		} else if value == "" {
+			doc[cif.Header[count]] = nil
 		} else {
 			doc[cif.Header[count]] = value
 		}

@@ -73,6 +73,12 @@ var _ = Describe("Ciface", func() {
 				a, _ := number.Parse()
 				Expect(a[0].(map[string]interface{})["latitude"]).To(Equal(69.21342))
 			})
+
+			It("should replace blank strings with nil", func() {
+				blank := NewParser([]byte("depth,beer\n,stella"))
+				a, _ := blank.Parse()
+				Expect(a[0].(map[string]interface{})["depth"]).To(BeNil())
+			})
 		})
 	})
 
