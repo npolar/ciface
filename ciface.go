@@ -3,6 +3,7 @@ package ciface
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
 	"math"
 	"strconv"
 	"strings"
@@ -43,7 +44,11 @@ func (cif *CsvInterface) Parse() ([]interface{}, error) {
 		if count == 0 && cif.Header == nil {
 			cif.Header = line
 		} else {
-			output = append(output, cif.LineConverter(line))
+			if lineInterface, lineErr := cif.LineConverter(line); lineErr == nil {
+				output = append(output, lineInterface)
+			} else {
+				err = lineErr
+			}
 		}
 	}
 
@@ -52,23 +57,29 @@ func (cif *CsvInterface) Parse() ([]interface{}, error) {
 
 // LineConverter processes the csv line data to the proper json types and returns
 // the resulting data structure as a map[string]interface{} (golang json structure).
-func (cif *CsvInterface) LineConverter(line []string) interface{} {
+func (cif *CsvInterface) LineConverter(line []string) (interface{}, error) {
+	var err error
 	doc := make(map[string]interface{})
 
-	for count, value := range line {
-		if BooleanString(value) {
-			bs, _ := strconv.ParseBool(value)
-			doc[cif.Header[count]] = bs
-		} else if number, err := strconv.ParseFloat(value, 64); err == nil {
-			doc[cif.Header[count]] = Round(number, cif.Precision)
-		} else if value == "" {
-			doc[cif.Header[count]] = nil
-		} else {
-			doc[cif.Header[count]] = value
+	if len(line) == len(cif.Header) {
+
+		for count, value := range line {
+			if BooleanString(value) {
+				bs, _ := strconv.ParseBool(value)
+				doc[cif.Header[count]] = bs
+			} else if number, err := strconv.ParseFloat(value, 64); err == nil {
+				doc[cif.Header[count]] = Round(number, cif.Precision)
+			} else if value == "" {
+				doc[cif.Header[count]] = nil
+			} else {
+				doc[cif.Header[count]] = value
+			}
 		}
+	} else {
+		err = errors.New("Item mismatch between header and line")
 	}
 
-	return doc
+	return doc, err
 }
 
 // BooleanString is used to detect if a string contains a boolean value

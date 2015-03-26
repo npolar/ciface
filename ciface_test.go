@@ -79,6 +79,12 @@ var _ = Describe("Ciface", func() {
 				a, _ := blank.Parse()
 				Expect(a[0].(map[string]interface{})["depth"]).To(BeNil())
 			})
+
+			It("should throw an error if header items doesn't match line items", func() {
+				mismatch := NewParser([]byte("a,b\njustA"))
+				_, countErr := mismatch.Parse()
+				Expect(countErr).ShouldNot(BeNil())
+			})
 		})
 	})
 
