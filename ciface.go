@@ -76,7 +76,7 @@ func (cif *CsvInterface) LineConverter(line []string) (interface{}, error) {
 			}
 		}
 	} else {
-		err = errors.New("Item mismatch between header and line")
+		err = errors.New("[CSV] - mismatching header and item count")
 	}
 
 	return doc, err
