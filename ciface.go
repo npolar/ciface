@@ -13,9 +13,10 @@ import (
 // Structure is in line with that of the standard libraries Csv parser.
 type CsvInterface struct {
 	Reader    *csv.Reader
-	Data      []byte
-	Header    []string
-	Precision int64
+	Data      []byte   // Raw csv data
+	Header    []string // Custom header
+	Precision int64    // Decimal precision when converting numbers
+	Skip      int      // Number of lines to skip before parsing
 }
 
 // NewParser is used to initialize a new CsvInterface with data
@@ -28,6 +29,7 @@ func NewParser(data []byte) *CsvInterface {
 	return &CsvInterface{
 		Reader:    reader,
 		Precision: 4,
+		Skip:      0,
 	}
 }
 
@@ -40,7 +42,7 @@ func (cif *CsvInterface) Parse() ([]interface{}, error) {
 	// the first line will be automatically parsed as the header.
 	var output []interface{}
 
-	for count, line := range raw {
+	for count, line := range raw[cif.Skip:] {
 		if count == 0 && cif.Header == nil {
 			cif.Header = line
 		} else {

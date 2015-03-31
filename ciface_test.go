@@ -85,6 +85,13 @@ var _ = Describe("Ciface", func() {
 				_, countErr := mismatch.Parse()
 				Expect(countErr).ShouldNot(BeNil())
 			})
+
+			It("should skip the number of lines specified", func() {
+				offsetParser := NewParser([]byte("crap\neven more crap\ndata,header\n10,beer"))
+				offsetParser.Skip = 2
+				a, _ := offsetParser.Parse()
+				Expect(a[0].(map[string]interface{})["data"]).To(Equal(float64(10)))
+			})
 		})
 	})
 
