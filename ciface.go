@@ -42,16 +42,20 @@ func (cif *CsvInterface) Parse() ([]interface{}, error) {
 	// the first line will be automatically parsed as the header.
 	var output []interface{}
 
-	for count, line := range raw[cif.Skip:] {
-		if count == 0 && cif.Header == nil {
-			cif.Header = line
-		} else {
-			if lineInterface, lineErr := cif.LineConverter(line); lineErr == nil {
-				output = append(output, lineInterface)
+	if len(raw) >= cif.Skip {
+		for count, line := range raw[cif.Skip:] {
+			if count == 0 && cif.Header == nil {
+				cif.Header = line
 			} else {
-				err = lineErr
+				if lineInterface, lineErr := cif.LineConverter(line); lineErr == nil {
+					output = append(output, lineInterface)
+				} else {
+					err = lineErr
+				}
 			}
 		}
+	} else {
+		err = errors.New("Skip offset to large.")
 	}
 
 	return output, err
