@@ -55,7 +55,7 @@ func (cif *CsvInterface) Parse() ([]interface{}, error) {
 			}
 		}
 	} else {
-		err = errors.New("Skip offset too large.")
+		err = errors.New("[CSV] Skip offset too large.")
 	}
 
 	return output, err
